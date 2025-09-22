@@ -11,7 +11,6 @@ services:
       - prod_data:/usr/share/nginx/html
     networks:
       - prod_net
-
 volumes:
   prod_data:
     driver: local
