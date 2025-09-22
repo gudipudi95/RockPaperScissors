@@ -1,0 +1,29 @@
+pipeline = {
+    agents any
+    stages {
+        stage("Clean up"){
+            steps {
+                deleteDir()
+            }
+        }
+        stage("Clone Repo"){
+            steps {
+                sh "git clone https://github.com/Saurabh-pec/Calculator-javaProject.git"
+            }
+        }
+        stage("Build"){
+            steps (
+                dir("Calculator-javaProject") {
+                    sh "mvn clean install"
+                }
+            )
+        }
+        stage("Test"){
+            steps{
+                dir("Calculator-javaProject") {
+                    sh "mvn test"
+                }
+            }
+        }
+    }
+}
