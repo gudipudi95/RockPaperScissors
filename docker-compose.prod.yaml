@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  test_app:
+    image: pragu095/project1:latest-main
+    ports:
+      - "80:80"
+    deploy:
+      replicas: 3
+    volumes:
+      - prod_data:/usr/share/nginx/html
+    networks:
+      - prod_net
+
+volumes:
+  prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/prod
+
+networks:
+  prod_net:
+    driver: overlay
