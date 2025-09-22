@@ -65,10 +65,10 @@ pipeline{
                         }
                     }else if(env.BRANCH_NAME=='main'){
                         node('prod-node'){
+                            unstash 'src'
                             withCredentials([usernamePassword(credentialsId:'dockerhub-creds',
                 usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]){
                 sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                            unstash 'src'
                             sh"""
                             docker service rm prod_stack || true
                             docker pull pragu095/project1:latest-prod
