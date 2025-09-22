@@ -1,26 +1,25 @@
-pipeline {
-    agent any
-
+pipeline{
+    agents none
     environment {
         REGISTRY="pragu095"
         IMAGE_NAME="project1"
     }
-
     stages{
         stage('Checkout'){
+            agent any
             steps{
-            git branch:'main', url:"https://github.com/gudipudi95/RockPaperScissors.git"
+                checkout scm
             }
         }
-        stage('Build with maven'){
-            steps{
-                sh 'mvn clean install -DskipTests || true'
-            }
-        }
+
         stage('Build Docker Image'){
             steps{
                 script {
-                    sh "docker build -t $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} ."
+                    //sh "docker build -t $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} ."
+                    IMAGE_TAG = "$REGISTRY/$IMAGE_NAME:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+                    IMAGE_LATEST = "$REGISTRY/$IMAGE_NAME:latest-${env.BRANCH_NAME}"
+                    sh "docker build -t $IMAGE_TAG ."
+                    sh "docker build -t $IMAGE_LATEST ."
                 }
             }
         }
@@ -29,16 +28,37 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId:'dockerhub-creds',
                 usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]){
                 sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                sh "docker push  $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER}"}
+                sh "docker push  $IMAGE_TAG"
+                sh "docker push  $IMAGE_LATEST"
+                }
             }
         }
-        stage('deploy'){
+
+        stage('Deploy'){
             steps{
                 script{
-                    //docker service update --image  $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} my-service || \
-                    //docker service create --name my-service -p 8080:8080  $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} 
-                    sh "docker rm -f ${IMAGE_NAME} || true"
-                    sh "docker container run -d --name ${IMAGE_NAME} -p 8000:80 $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER}"
+                    if(env.BRANCH_NAME=='dev'){
+                        node('dev-test-node'){
+                            sh"""
+                            docker service rm dev_stack || true
+                            docker stack deploy -c docker-compose.dev.yaml dev_stack
+                            """
+                        }
+                    }else if(env.BRANCH_NAME=='test'){
+                        node('dev-test-node'){
+                            sh"""
+                            docker service rm test_stack || true
+                            docker stack deploy -c docker-compose.test.yaml test_stack
+                            """
+                        }
+                    }else if(env.BRANCH_NAME=='main'){
+                        node('prod-node'){
+                            sh"""
+                            docker service rm prod_stack || true
+                            docker stack deploy -c docker-compose.prod.yaml prod_stack
+                            """
+                        }
+                    }
                 }
             }
         }
