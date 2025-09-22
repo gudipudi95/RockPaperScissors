@@ -1,12 +1,11 @@
 pipeline{
-    agent any
+    agent { label 'Built-In Node'}
     environment {
         REGISTRY="pragu095"
         IMAGE_NAME="project1"
     }
     stages{
         stage('Checkout'){
-            agent any
             steps{
                 checkout scm
             }
@@ -18,10 +17,8 @@ pipeline{
                     //sh "docker build -t $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} ."
                     IMAGE_TAG = "$REGISTRY/$IMAGE_NAME:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
                     IMAGE_LATEST = "$REGISTRY/$IMAGE_NAME:latest-${env.BRANCH_NAME}"
-                    node('Built-In Node'){
                         sh "docker build -t $IMAGE_TAG ."
                         sh "docker tag $IMAGE_TAG $IMAGE_LATEST"
-                    }
                 }
             }
         }
