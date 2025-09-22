@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  test_app:
+    image: pragu095/project1:latest-test
+    ports:
+      - "8082:80"
+    deploy:
+      replicas: 2
+    volumes:
+      - test_data:/usr/share/nginx/html
+    networks:
+      - test_net
+volumes:
+  test_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/docker/test
+
+networks:
+  test_net:
+    driver: overlay
