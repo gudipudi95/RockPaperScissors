@@ -40,29 +40,41 @@ pipeline{
                     if(env.BRANCH_NAME=='dev'){
                         node('dev-test-node'){
                             unstash 'src'
+                            withCredentials([usernamePassword(credentialsId:'dockerhub-creds',
+                usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]){
+                sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             sh"""
                             docker service rm dev_stack || true
                             docker pull pragu095/project1:latest-dev
                             docker stack deploy -c docker-compose.dev.yaml dev_stack
                             """
+                            }
                         }
                     }else if(env.BRANCH_NAME=='test'){
                         node('dev-test-node'){
                             unstash 'src'
+                            withCredentials([usernamePassword(credentialsId:'dockerhub-creds',
+                usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]){
+                sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             sh"""
                             docker service rm test_stack || true
                             docker pull pragu095/project1:latest-test
                             docker stack deploy -c docker-compose.test.yaml test_stack
                             """
+                            }
                         }
                     }else if(env.BRANCH_NAME=='main'){
                         node('prod-node'){
+                            withCredentials([usernamePassword(credentialsId:'dockerhub-creds',
+                usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]){
+                sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             unstash 'src'
                             sh"""
                             docker service rm prod_stack || true
                             docker pull pragu095/project1:latest-prod
                             docker stack deploy -c docker-compose.prod.yaml prod_stack
                             """
+                            }
                         }
                     }
                 }
