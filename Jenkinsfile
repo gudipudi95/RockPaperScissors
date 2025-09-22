@@ -1,5 +1,5 @@
 pipeline{
-    agent any
+    agents any
     environment {
         REGISTRY="pragu095"
         IMAGE_NAME="project1"
@@ -18,8 +18,10 @@ pipeline{
                     //sh "docker build -t $REGISTRY/$IMAGE_NAME:${env.BUILD_NUMBER} ."
                     IMAGE_TAG = "$REGISTRY/$IMAGE_NAME:${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
                     IMAGE_LATEST = "$REGISTRY/$IMAGE_NAME:latest-${env.BRANCH_NAME}"
-                    sh "docker build -t $IMAGE_TAG ."
-                    sh "docker build -t $IMAGE_LATEST ."
+                    node('Built-In Node'){
+                        sh "docker build -t $IMAGE_TAG ."
+                        sh "docker tag $IMAGE_TAG $IMAGE_LATEST"
+                    }
                 }
             }
         }
