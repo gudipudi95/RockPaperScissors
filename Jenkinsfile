@@ -1,5 +1,5 @@
 pipeline{
-    agents any
+    agent any
     environment {
         REGISTRY="pragu095"
         IMAGE_NAME="project1"
