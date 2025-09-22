@@ -71,7 +71,7 @@ pipeline{
                 sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             sh"""
                             docker service rm prod_stack || true
-                            docker pull pragu095/project1:latest-prod
+                            docker pull pragu095/project1:latest-main
                             docker stack deploy -c docker-compose.prod.yaml prod_stack
                             """
                             }
